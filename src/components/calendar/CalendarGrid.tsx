@@ -96,7 +96,7 @@ export function CalendarGrid({ monthDate, entries }: Props) {
               <button
                 key={dateKey}
                 type="button"
-                className={`flex min-h-[4.6rem] w-full flex-col px-1.5 py-1.5 touch-manipulation ${gridLineClass}`}
+                className={`appearance-none border-0 bg-transparent text-inherit flex min-h-[4.6rem] w-full flex-col px-1.5 py-1.5 touch-manipulation ${gridLineClass}`}
                 {...bindTap(() => router.push(`/entries/new?date=${dateKey}`))}
                 aria-label={`${dateKey} の新規記録を作成`}
               >
