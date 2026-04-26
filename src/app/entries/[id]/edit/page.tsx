@@ -27,7 +27,7 @@ export default function EditEntryPage() {
         setEntry(json.entry);
       }
     })().catch(() => setEntry(null));
-    fetchPlantTypes().then(setPlantTypes).catch(() => setPlantTypes([]));
+    fetchPlantTypes(true).then(setPlantTypes).catch(() => setPlantTypes([]));
   }, [params.id]);
 
   if (!entry) {

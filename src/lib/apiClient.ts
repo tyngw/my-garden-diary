@@ -20,6 +20,12 @@ export async function fetchEntriesByDate(date: string): Promise<DiaryEntry[]> {
   return json.entries;
 }
 
+export async function fetchAllEntries(): Promise<DiaryEntry[]> {
+  const response = await fetch("/api/entries", { cache: "no-store" });
+  const json = await parse<{ entries: DiaryEntry[] }>(response);
+  return json.entries;
+}
+
 export async function fetchPlantTypes(includeArchived = false): Promise<PlantType[]> {
   const response = await fetch(`/api/plant-types?archived=${includeArchived}`);
   const json = await parse<{ plantTypes: PlantType[] }>(response);

@@ -2,18 +2,46 @@
 
 import { useEffect, useState } from "react";
 import { addMonths, format, subMonths } from "date-fns";
+import { useRouter } from "next/navigation";
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
 import { AppShell } from "@/components/layout/AppShell";
 import { CalendarGrid } from "@/components/calendar/CalendarGrid";
-import { fetchEntriesByMonth } from "@/lib/apiClient";
+import { fetchAllEntries, fetchEntriesByMonth } from "@/lib/apiClient";
 import { toJapaneseMonthLabel } from "@/lib/date";
-import { bindTap } from "@/lib/tap";
 import type { DiaryEntry } from "@/lib/types";
 
+function parseMonthParam(value: string | null): Date {
+  if (!value || !/^\d{4}-\d{2}$/.test(value)) {
+    return new Date();
+  }
+  const parsed = new Date(`${value}-01T00:00:00`);
+  return Number.isNaN(parsed.getTime()) ? new Date() : parsed;
+}
+
 export default function CalendarPage() {
-  const [month, setMonth] = useState(new Date());
+  const router = useRouter();
+  const [month, setMonth] = useState<Date>(new Date());
+  const [hydrated, setHydrated] = useState(false);
   const [entries, setEntries] = useState<DiaryEntry[]>([]);
+  const [allEntries, setAllEntries] = useState<DiaryEntry[]>([]);
   const [loadError, setLoadError] = useState("");
+
+  useEffect(() => {
+    const monthFromUrl = new URLSearchParams(window.location.search).get("month");
+    setMonth(parseMonthParam(monthFromUrl));
+    setHydrated(true);
+  }, []);
+
+  useEffect(() => {
+    if (!hydrated) {
+      return;
+    }
+    const key = format(month, "yyyy-MM");
+    const current = new URLSearchParams(window.location.search).get("month");
+    if (current !== key) {
+      router.replace(`/calendar?month=${key}`, { scroll: false });
+    }
+  }, [hydrated, month, router]);
 
   useEffect(() => {
     setLoadError("");
@@ -24,8 +52,13 @@ export default function CalendarPage() {
         setLoadError("記録の読み込みに失敗しました");
       });
   }, [month]);
-  const recordDays = new Set(entries.map((entry) => entry.date)).size;
-  const recordCount = entries.length;
+
+  useEffect(() => {
+    fetchAllEntries().then(setAllEntries).catch(() => setAllEntries([]));
+  }, []);
+
+  const recordDays = new Set(allEntries.map((entry) => entry.date)).size;
+  const recordCount = allEntries.length;
 
   return (
     <AppShell>
@@ -47,7 +80,7 @@ export default function CalendarPage() {
         <div className="mb-3 grid grid-cols-[3rem_1fr_3rem] items-center gap-2">
           <button
             type="button"
-            {...bindTap(() => setMonth((v) => subMonths(v, 1)))}
+            onClick={() => setMonth((v) => subMonths(v, 1))}
             className="app-btn-secondary touch-manipulation flex h-12 w-12 items-center justify-center"
             aria-label="前の月"
           >
@@ -56,7 +89,7 @@ export default function CalendarPage() {
           <h3 className="min-w-0 text-center text-2xl font-extrabold text-[var(--ink)] sm:text-3xl">{toJapaneseMonthLabel(month)}</h3>
           <button
             type="button"
-            {...bindTap(() => setMonth((v) => addMonths(v, 1)))}
+            onClick={() => setMonth((v) => addMonths(v, 1))}
             className="app-btn-secondary touch-manipulation flex h-12 w-12 items-center justify-center"
             aria-label="次の月"
           >

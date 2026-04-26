@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { PencilSquareIcon } from "@heroicons/react/24/outline";
 import { compressImage } from "@/lib/imageCompression";
 import { EntryImagePicker } from "@/components/entries/EntryImagePicker";
 import { PlantTypeSheet } from "@/components/entries/PlantTypeSheet";
@@ -68,8 +69,15 @@ export function EntryForm({ initial, plantTypes, settings, onSubmit, submitLabel
     <>
       <section className="space-y-4 rounded-3xl bg-[#1b6a4b] p-4 text-[#f3fff7]">
         <label className="block"><p className="mb-1 text-sm text-[#daf3e1]">日付</p><input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="ios-safe-field ios-safe-field--compact w-full rounded-lg bg-[#f7fff9] px-3 text-[#1f4d35]" /></label>
-        <label className="block"><p className="mb-1 text-sm text-[#daf3e1]">植物の種類</p><select value={plantTypeId} onChange={(e) => setPlantTypeId(e.target.value)} className="ios-safe-field ios-safe-field--compact w-full rounded-lg bg-[#f7fff9] px-3 text-[#1f4d35]"><option value="">未選択</option>{mergedPlantTypes.filter((p) => !p.archived).map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}</select></label>
-        <button type="button" {...bindTap(() => setSheetOpen(true))} className="touch-manipulation min-h-11 w-full rounded-lg bg-[#3f9269] px-3 py-2 text-sm font-semibold text-[#f3fff7]">種類を追加・編集する</button>
+        <label className="block">
+          <p className="mb-1 text-sm text-[#daf3e1]">植物の種類</p>
+          <div className="flex items-center gap-2">
+            <select value={plantTypeId} onChange={(e) => setPlantTypeId(e.target.value)} className="ios-safe-field ios-safe-field--compact min-w-0 flex-1 rounded-lg bg-[#f7fff9] px-3 text-[#1f4d35]"><option value="">未選択</option>{mergedPlantTypes.filter((p) => !p.archived).map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}</select>
+            <button type="button" aria-label="植物の種類を編集" {...bindTap(() => setSheetOpen(true))} className="app-btn-secondary inline-flex h-11 w-11 items-center justify-center p-0">
+              <PencilSquareIcon className="h-5 w-5" />
+            </button>
+          </div>
+        </label>
         <label className="block"><p className="mb-1 text-sm text-[#daf3e1]">メモ（200字以内）</p><textarea value={memo} onChange={(e) => setMemo(e.target.value.slice(0, 200))} rows={4} className="ios-safe-field w-full rounded-lg bg-[#f7fff9] px-3 py-2 text-[#1f4d35]" /><p className="mt-1 text-right text-xs text-[#daf3e1]">残り{remain}文字</p></label>
         <EntryImagePicker
           existingUrls={existingImageUrls}

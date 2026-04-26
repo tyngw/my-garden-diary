@@ -28,7 +28,7 @@ export function CalendarGrid({ monthDate, entries }: Props) {
   }, {});
 
   return (
-    <section className="rounded-[1.75rem] border border-[#5b8b71] bg-[rgba(11,48,36,0.72)] px-3 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] sm:px-4">
+    <section className="rounded-[1.75rem] border border-[var(--line)] bg-[var(--surface-soft)] px-3 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.1)] sm:px-4">
       <div className="mb-3 grid grid-cols-7 text-center text-xs font-semibold tracking-wide text-[var(--ink-soft)]">
         {weekLabels.map((label) => (
           <p key={label}>{label}</p>
@@ -46,22 +46,22 @@ export function CalendarGrid({ monthDate, entries }: Props) {
           const hasEntries = items.length > 0;
           const cellClass = `flex h-18 flex-col rounded-xl border px-1.5 py-1.5 ${
             today
-              ? "border-[#98c9a5] bg-[#f2faf2] shadow-[0_10px_24px_-18px_rgba(20,60,40,0.55)]"
+              ? "border-[#4cae68] bg-[#1f5c44] shadow-[0_10px_24px_-18px_rgba(0,0,0,0.4)]"
               : hasEntries
-                ? "border-[#bdd9c5] bg-[#ebf5ed] shadow-[0_10px_24px_-20px_rgba(20,60,40,0.45)]"
-                : "border-[#7ea891] bg-[rgba(223,239,226,0.18)]"
+                ? "border-[#2f7a59] bg-[#184b37] shadow-[0_10px_24px_-20px_rgba(0,0,0,0.3)]"
+                : "border-[#2f7a59] bg-[rgba(15,57,43,0.6)]"
           }`;
           return (
             items.length ? (
               <Link key={dateKey} href={target} className={`${cellClass} relative z-10 touch-manipulation`} {...bindTap(() => router.push(target))}>
                 <div className="flex h-6 items-center justify-center">
-                  <span className={`text-sm font-semibold ${today || hasEntries ? "text-[#204631]" : "text-[var(--ink)]"}`}>{format(day, "d")}</span>
+                  <span className={`text-sm font-semibold ${today ? "text-[#a9f3c1]" : "text-[var(--ink)]"}`}>{format(day, "d")}</span>
                 </div>
                 <div className="flex h-10 items-center justify-center">
                   {items[0]?.imageUrls[0] ? (
                     <Image src={items[0].imageUrls[0]} alt="thumb" width={30} height={30} className="h-7 w-7 rounded-md object-cover" />
                   ) : (
-                    <ChatBubbleLeftEllipsisIcon className="h-5 w-5 text-[#4d8e66]" />
+                    <ChatBubbleLeftEllipsisIcon className="h-5 w-5 text-[var(--accent)]" />
                   )}
                 </div>
               </Link>

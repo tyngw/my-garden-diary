@@ -1,5 +1,5 @@
 import { readDb, updateDb } from "@/lib/db";
-import { validatePlantTypeName } from "@/lib/validation";
+import { normalizePlantTypeName, validatePlantTypeName } from "@/lib/validation";
 import type { PlantType } from "@/lib/types";
 
 export async function GET(request: Request): Promise<Response> {
@@ -12,10 +12,16 @@ export async function GET(request: Request): Promise<Response> {
 export async function POST(request: Request): Promise<Response> {
   try {
     const body = (await request.json()) as Partial<PlantType>;
+    const db = await readDb();
+    const trimmedName = validatePlantTypeName(body.name);
+    const normalized = normalizePlantTypeName(trimmedName);
+    if (db.plantTypes.some((item) => normalizePlantTypeName(item.name) === normalized)) {
+      return Response.json({ error: "同じ名前の植物種がすでに存在します" }, { status: 409 });
+    }
     const now = new Date().toISOString();
     const plantType: PlantType = {
       id: crypto.randomUUID(),
-      name: validatePlantTypeName(body.name),
+      name: trimmedName,
       archived: false,
       createdAt: now,
       updatedAt: now,

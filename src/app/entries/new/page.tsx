@@ -15,7 +15,7 @@ export default function NewEntryPage() {
   const [settings] = useCompressionSettings();
 
   useEffect(() => {
-    fetchPlantTypes().then(setPlantTypes).catch(() => setPlantTypes([]));
+    fetchPlantTypes(true).then(setPlantTypes).catch(() => setPlantTypes([]));
   }, []);
 
   return (

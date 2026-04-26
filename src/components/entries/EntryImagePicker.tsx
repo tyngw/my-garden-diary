@@ -1,8 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useMemo } from "react";
-import { PhotoIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import { useEffect, useMemo, useRef } from "react";
+import { PlusIcon, XMarkIcon } from "@heroicons/react/24/outline";
 
 type Props = {
   existingUrls: string[];
@@ -19,6 +19,7 @@ export function EntryImagePicker({
   onRemoveExisting,
   onRemoveNew,
 }: Props) {
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
   const previewUrls = useMemo(() => newFiles.map((file) => URL.createObjectURL(file)), [newFiles]);
 
   useEffect(() => {
@@ -30,24 +31,32 @@ export function EntryImagePicker({
   return (
     <section className="space-y-3">
       <div className="flex items-center justify-between">
-        <p className="text-sm font-semibold text-[var(--ink-soft)]">画像</p>
-        <p className="text-xs text-[var(--ink-soft)]">最大10枚まで</p>
+        <div>
+          <p className="text-sm font-semibold text-[var(--ink-soft)]">画像</p>
+          <p className="text-xs text-[var(--ink-soft)]">最大10枚まで</p>
+        </div>
+        <button
+          type="button"
+          aria-label="画像を追加"
+          className="app-btn inline-flex h-10 w-10 items-center justify-center p-0"
+          onClick={() => fileInputRef.current?.click()}
+        >
+          <PlusIcon className="h-5 w-5" />
+        </button>
       </div>
-      <label className="flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-xl border border-dashed border-[#bcd0c5] bg-[#f7faf7] px-3 py-3 text-[var(--ink)]">
-        <PhotoIcon className="h-5 w-5" />
-        <span className="text-sm font-semibold">画像を追加する</span>
-        <input
-          type="file"
-          accept="image/*"
-          multiple
-          className="hidden"
-          onChange={(event) => {
-            const files = Array.from(event.target.files ?? []);
-            onFilesChange([...newFiles, ...files].slice(0, 10));
-            event.currentTarget.value = "";
-          }}
-        />
-      </label>
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        multiple
+        className="hidden"
+        onChange={(event) => {
+          const files = Array.from(event.target.files ?? []);
+          onFilesChange([...newFiles, ...files].slice(0, 10));
+          event.currentTarget.value = "";
+        }}
+      />
+      {!existingUrls.length && !previewUrls.length ? <p className="text-xs text-[var(--ink-soft)]">画像はまだ選択されていません</p> : null}
       {existingUrls.length || previewUrls.length ? (
         <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
           {existingUrls.map((url, index) => (

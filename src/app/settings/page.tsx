@@ -1,19 +1,23 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { AppShell } from "@/components/layout/AppShell";
 import { useCompressionSettings } from "@/hooks/useCompressionSettings";
 
 export default function SettingsPage() {
+  const router = useRouter();
   const [saved, setSaved] = useCompressionSettings();
   const [draft, setDraft] = useState(saved);
 
   const handleSave = () => {
     setSaved(draft);
+    router.replace("/calendar");
   };
 
   const handleCancel = () => {
     setDraft(saved);
+    router.push("/calendar");
   };
 
   return (

@@ -35,6 +35,10 @@ export function validatePlantTypeName(value: unknown): string {
   return trimmed;
 }
 
+export function normalizePlantTypeName(value: string): string {
+  return value.trim().normalize("NFKC").toLocaleLowerCase("ja-JP");
+}
+
 export function validateImageUrls(value: unknown): string[] {
   if (value == null) {
     return [];

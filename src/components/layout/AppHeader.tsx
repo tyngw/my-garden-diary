@@ -25,7 +25,7 @@ export function AppHeader({ title = "MyGarden Diary" }: Props) {
 
   return (
     <>
-      <header className="sticky top-0 z-30 border-b border-white/10 bg-[color:rgba(15,57,43,0.88)] text-[#f5fff7] backdrop-blur-md">
+      <header className="fixed inset-x-0 top-0 z-30 border-b border-white/10 bg-[color:rgba(26,74,55,0.9)] pt-[env(safe-area-inset-top)] text-[#f5fff7] backdrop-blur-md">
         <div className="mx-auto h-13 w-full max-w-[860px] px-2 sm:px-3">
           <div className="relative h-full">
             <div className="absolute inset-y-0 left-0 flex items-center">
@@ -70,10 +70,10 @@ export function AppHeader({ title = "MyGarden Diary" }: Props) {
           <button
             type="button"
             aria-label="メニューを閉じる"
-            className="fixed inset-0 top-12 z-30 bg-black/25"
+            className="fixed inset-0 top-[calc(env(safe-area-inset-top)+3.25rem)] z-30 bg-black/25"
             {...bindTap(closeMenu)}
           />
-          <nav className="fixed right-2 top-15 z-40 w-48 rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-2 text-[var(--ink)] shadow-[0_24px_60px_-30px_rgba(0,0,0,0.7)] sm:right-[max(0.75rem,calc((100vw-860px)/2+0.75rem))]">
+          <nav className="fixed right-2 top-[calc(env(safe-area-inset-top)+3.75rem)] z-40 w-48 rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-2 text-[var(--ink)] shadow-[0_24px_60px_-30px_rgba(0,0,0,0.7)] sm:right-[max(0.75rem,calc((100vw-860px)/2+0.75rem))]">
             <div className="space-y-1">
               <Link href="/calendar" className="block rounded-xl px-3 py-2 text-sm hover:bg-[var(--surface-soft)]" onClick={closeMenu}>
                 カレンダー
