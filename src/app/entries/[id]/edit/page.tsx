@@ -32,14 +32,14 @@ export default function EditEntryPage() {
 
   if (!entry) {
     return (
-      <AppShell title="編集">
+      <AppShell title="編集" backHref={`/entries/${params.id}`}>
         <section className="app-card p-4 text-sm text-[var(--ink-soft)]">読み込み中...</section>
       </AppShell>
     );
   }
 
   return (
-    <AppShell title="記録編集">
+    <AppShell title="記録編集" backHref={`/entries/${entry.id}`}>
       <EntryForm
         initial={entry}
         plantTypes={plantTypes}
@@ -56,7 +56,7 @@ export default function EditEntryPage() {
           if (!res.ok) {
             throw new Error(json.error ?? "更新に失敗しました");
           }
-          router.push(`/entries/${id}`);
+          router.replace(`/entries/${id}`);
         }}
       />
     </AppShell>

@@ -13,15 +13,20 @@ export default function NewEntryPage() {
   const router = useRouter();
   const [plantTypes, setPlantTypes] = useState<PlantType[]>([]);
   const [settings] = useCompressionSettings();
+  const [initialDate, setInitialDate] = useState(getTodayJst());
 
   useEffect(() => {
+    const dateFromQuery = new URLSearchParams(window.location.search).get("date");
+    if (/^\d{4}-\d{2}-\d{2}$/.test(dateFromQuery ?? "")) {
+      setInitialDate(dateFromQuery as string);
+    }
     fetchPlantTypes(true).then(setPlantTypes).catch(() => setPlantTypes([]));
   }, []);
 
   return (
-    <AppShell title="新規記録">
+    <AppShell title="新規記録" backHref="/calendar">
       <EntryForm
-        initial={{ date: getTodayJst(), memo: "" }}
+        initial={{ date: initialDate, memo: "" }}
         plantTypes={plantTypes}
         settings={settings}
         submitLabel="記録を保存"

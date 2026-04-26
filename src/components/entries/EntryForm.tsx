@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { PencilSquareIcon } from "@heroicons/react/24/outline";
 import { compressImage } from "@/lib/imageCompression";
 import { EntryImagePicker } from "@/components/entries/EntryImagePicker";
@@ -28,6 +28,16 @@ export function EntryForm({ initial, plantTypes, settings, onSubmit, submitLabel
   const [error, setError] = useState("");
   const remain = useMemo(() => 200 - memo.length, [memo]);
   const mergedPlantTypes = localPlantTypes ?? plantTypes;
+
+  useEffect(() => {
+    if (plantTypeId) {
+      return;
+    }
+    const uncategorized = mergedPlantTypes.find((item) => item.name === "未分類" && !item.archived);
+    if (uncategorized) {
+      setPlantTypeId(uncategorized.id);
+    }
+  }, [mergedPlantTypes, plantTypeId]);
 
   const reloadPlantTypes = async (): Promise<void> => {
     const response = await fetch("/api/plant-types?archived=true");

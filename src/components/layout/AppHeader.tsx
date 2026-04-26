@@ -3,12 +3,16 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { ArrowLeftIcon, Bars3Icon, PlusIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import { ArrowLeftIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import { Bars3Icon, PlusIcon } from "@heroicons/react/24/solid";
 import { bindTap } from "@/lib/tap";
 
-type Props = { title?: string };
+type Props = {
+  title?: string;
+  backHref?: string;
+};
 
-export function AppHeader({ title = "MyGarden Diary" }: Props) {
+export function AppHeader({ title = "MyGarden Diary", backHref = "/calendar" }: Props) {
   const router = useRouter();
   const pathname = usePathname();
   const isCalendar = pathname === "/calendar";
@@ -44,7 +48,7 @@ export function AppHeader({ title = "MyGarden Diary" }: Props) {
             ) : (
               <button
                 type="button"
-                {...bindTap(() => router.back())}
+                {...bindTap(() => router.push(backHref))}
                 className="touch-manipulation rounded-full border border-white/12 bg-white/8 p-2 hover:bg-white/15"
                 aria-label="戻る"
               >

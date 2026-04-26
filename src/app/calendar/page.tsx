@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { addMonths, format, subMonths } from "date-fns";
+import { useEffect, useMemo, useState } from "react";
+import { addMonths, format, startOfMonth, subMonths } from "date-fns";
 import { useRouter } from "next/navigation";
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
 import { AppShell } from "@/components/layout/AppShell";
@@ -21,6 +21,7 @@ function parseMonthParam(value: string | null): Date {
 
 export default function CalendarPage() {
   const router = useRouter();
+  const thisMonth = useMemo(() => startOfMonth(new Date()), []);
   const [month, setMonth] = useState<Date>(new Date());
   const [hydrated, setHydrated] = useState(false);
   const [entries, setEntries] = useState<DiaryEntry[]>([]);
@@ -28,21 +29,25 @@ export default function CalendarPage() {
 
   useEffect(() => {
     const monthFromUrl = new URLSearchParams(window.location.search).get("month");
-    const initialMonth = parseMonthParam(monthFromUrl);
+    const parsedMonth = parseMonthParam(monthFromUrl);
+    const initialMonth = parsedMonth > thisMonth ? thisMonth : parsedMonth;
     setMonth(initialMonth);
     if (monthFromUrl !== format(initialMonth, "yyyy-MM")) {
       router.replace(`/calendar?month=${format(initialMonth, "yyyy-MM")}`, { scroll: false });
     }
     setHydrated(true);
-  }, [router]);
+  }, [router, thisMonth]);
 
   const moveMonth = (delta: number): void => {
     setMonth((current) => {
-      const next = delta > 0 ? addMonths(current, delta) : subMonths(current, Math.abs(delta));
+      const shifted = delta > 0 ? addMonths(current, delta) : subMonths(current, Math.abs(delta));
+      const next = shifted > thisMonth ? thisMonth : shifted;
       router.replace(`/calendar?month=${format(next, "yyyy-MM")}`, { scroll: false });
       return next;
     });
   };
+
+  const canGoNext = month < thisMonth;
 
   useEffect(() => {
     if (!hydrated) {
@@ -89,9 +94,10 @@ export default function CalendarPage() {
           <h3 className="min-w-0 text-center text-2xl font-extrabold text-[var(--ink)] sm:text-3xl">{toJapaneseMonthLabel(month)}</h3>
           <button
             type="button"
-            {...bindTap(() => moveMonth(1))}
-            className="app-btn-secondary touch-manipulation flex h-12 w-12 items-center justify-center"
+            {...bindTap(() => canGoNext && moveMonth(1))}
+            className="app-btn-secondary touch-manipulation flex h-12 w-12 items-center justify-center disabled:opacity-45"
             aria-label="次の月"
+            disabled={!canGoNext}
           >
             <ChevronRightIcon className="h-6 w-6" />
           </button>

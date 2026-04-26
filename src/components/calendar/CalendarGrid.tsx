@@ -59,6 +59,7 @@ export function CalendarGrid({ monthDate, entries }: Props) {
           const dateKey = format(day, "yyyy-MM-dd");
           const items = map[dateKey] ?? [];
           const target = items.length > 1 ? `/entries/date/${dateKey}` : `/entries/${items[0]?.id}`;
+          const imageThumbs = items.flatMap((item) => item.imageUrls).slice(0, 3);
           const today = isToday(day);
           const numberClass = today
             ? "inline-flex min-h-6 min-w-6 items-center justify-center rounded-full bg-[#4cae68] px-1 text-sm font-bold text-[#f7fff9]"
@@ -69,21 +70,41 @@ export function CalendarGrid({ monthDate, entries }: Props) {
                 <div className="flex h-6 items-center justify-center">
                   <span className={numberClass}>{format(day, "d")}</span>
                 </div>
-                <div className="flex h-10 items-center justify-center">
-                  {items[0]?.imageUrls[0] ? (
-                    <Image src={items[0].imageUrls[0]} alt="thumb" width={30} height={30} className="h-7 w-7 rounded-md object-cover" />
+                <div className="relative flex h-10 items-center justify-center">
+                  {imageThumbs.length ? (
+                    imageThumbs.map((url, thumbIndex) => (
+                      <Image
+                        key={`${url}-${thumbIndex}`}
+                        src={url}
+                        alt="thumb"
+                        width={30}
+                        height={30}
+                        className="absolute h-7 w-7 rounded-md border border-white/60 object-cover shadow-sm"
+                        style={{
+                          transform: `translate(${thumbIndex * 5 - 5}px, ${thumbIndex * 2}px)`,
+                          opacity: 1 - thumbIndex * 0.25,
+                          zIndex: 30 - thumbIndex,
+                        }}
+                      />
+                    ))
                   ) : (
                     <ChatBubbleLeftEllipsisIcon className="h-5 w-5 text-[var(--accent)]" />
                   )}
                 </div>
               </Link>
             ) : (
-              <div key={dateKey} className={`flex min-h-[4.6rem] flex-col px-1.5 py-1.5 ${gridLineClass}`}>
+              <button
+                key={dateKey}
+                type="button"
+                className={`flex min-h-[4.6rem] w-full flex-col px-1.5 py-1.5 touch-manipulation ${gridLineClass}`}
+                {...bindTap(() => router.push(`/entries/new?date=${dateKey}`))}
+                aria-label={`${dateKey} の新規記録を作成`}
+              >
                 <div className="flex h-6 items-center justify-center">
                   <span className={numberClass}>{format(day, "d")}</span>
                 </div>
                 <div className="h-10" />
-              </div>
+              </button>
             )
           );
         })}

@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { ChatBubbleLeftEllipsisIcon } from "@heroicons/react/24/solid";
 import type { DiaryEntry, PlantType } from "@/lib/types";
 
@@ -9,10 +10,11 @@ type Props = {
 };
 
 export function EntryListItem({ entry, plantType }: Props) {
+  const pathname = usePathname();
   const thumbnailUrl = entry.imageUrls[0];
 
   return (
-    <Link href={`/entries/${entry.id}`} className="app-card flex items-center gap-3 p-3 transition hover:translate-y-[-1px]">
+    <Link href={`/entries/${entry.id}?from=${encodeURIComponent(pathname)}`} className="app-card flex items-center gap-3 p-3 transition hover:translate-y-[-1px]">
       <div className="relative flex h-16 w-16 items-center justify-center overflow-hidden rounded-xl border border-[#d6e5dc] bg-[#f6faf7]">
         {thumbnailUrl ? (
           <Image src={thumbnailUrl} alt="entry" fill sizes="64px" className="object-cover" />

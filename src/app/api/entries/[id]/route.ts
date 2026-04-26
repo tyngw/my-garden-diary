@@ -39,3 +39,26 @@ export async function PUT(request: Request, { params }: Params): Promise<Respons
     );
   }
 }
+
+export async function DELETE(_: Request, { params }: Params): Promise<Response> {
+  try {
+    const { id } = await params;
+    const deleted = await updateDb((db) => {
+      const index = db.entries.findIndex((item) => item.id === id);
+      if (index < 0) {
+        return null;
+      }
+      const [removed] = db.entries.splice(index, 1);
+      return removed;
+    });
+    if (!deleted) {
+      return Response.json({ error: "記録が見つかりません" }, { status: 404 });
+    }
+    return Response.json({ entry: deleted });
+  } catch (error) {
+    return Response.json(
+      { error: error instanceof Error ? error.message : "不明なエラー" },
+      { status: 400 },
+    );
+  }
+}

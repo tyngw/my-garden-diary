@@ -40,7 +40,7 @@ export default function EntryDatePage() {
   }, [params.date]);
 
   return (
-    <AppShell title="同日の記録一覧">
+    <AppShell title="同日の記録一覧" backHref="/calendar">
       <section className="space-y-3">
         {groups.map((group) => {
           const expanded = openDate === group.date;
