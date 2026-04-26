@@ -1,36 +1,54 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# MyGarden Diary
 
-## Getting Started
+植物の観察記録を、日付ごとに写真とメモで管理するためのモバイル優先 Web アプリです。
 
-First, run the development server:
+## 技術スタック
+
+- Next.js (App Router)
+- TypeScript
+- Tailwind CSS
+- Heroicons
+- JSON ストレージ: `data/db.json`
+
+## 主な機能
+
+- カレンダー表示（月切り替え、未来月の抑止）
+- 新規記録作成（日付、植物種、メモ、複数画像）
+- 記録詳細（編集、削除、画像全画面表示）
+- 記録編集
+- 同日複数記録の一覧表示
+- 植物種管理（追加、編集、アーカイブ）
+- 画像圧縮設定
+
+## セットアップ
+
+```bash
+npm install
+```
+
+## 開発サーバ起動
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+ブラウザで `http://localhost:3000` を開いて確認します。
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 品質確認
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run lint
+npm run build
+```
 
-## Learn More
+## ディレクトリ概要
 
-To learn more about Next.js, take a look at the following resources:
+- `src/app`: 画面と API ルート
+- `src/components`: UI コンポーネント
+- `src/lib`: 型、バリデーション、ユーティリティ
+- `src/hooks`: カスタムフック
+- `data`: JSON データとアップロード画像
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 仕様ドキュメント
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+要件の詳細は [REQUIREMENTS.md](REQUIREMENTS.md) を参照してください。
