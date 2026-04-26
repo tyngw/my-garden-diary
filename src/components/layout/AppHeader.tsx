@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { ArrowLeftIcon, Bars3Icon, PlusIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { bindTap } from "@/lib/tap";
@@ -12,15 +12,18 @@ export function AppHeader({ title = "MyGarden Diary" }: Props) {
   const router = useRouter();
   const pathname = usePathname();
   const isCalendar = pathname === "/calendar";
-  const [menuPathname, setMenuPathname] = useState<string | null>(null);
-  const menuOpen = menuPathname === pathname;
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  useEffect(() => {
+    setMenuOpen(false);
+  }, [pathname]);
 
   const toggleMenu = (): void => {
-    setMenuPathname((current) => (current === pathname ? null : pathname));
+    setMenuOpen((current) => !current);
   };
 
   const closeMenu = (): void => {
-    setMenuPathname(null);
+    setMenuOpen(false);
   };
 
   return (

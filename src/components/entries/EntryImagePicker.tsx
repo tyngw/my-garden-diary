@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useEffect, useMemo, useRef } from "react";
 import { PlusIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import { bindTap } from "@/lib/tap";
 
 type Props = {
   existingUrls: string[];
@@ -39,7 +40,7 @@ export function EntryImagePicker({
           type="button"
           aria-label="画像を追加"
           className="app-btn inline-flex h-10 w-10 items-center justify-center p-0"
-          onClick={() => fileInputRef.current?.click()}
+          {...bindTap(() => fileInputRef.current?.click())}
         >
           <PlusIcon className="h-5 w-5" />
         </button>
@@ -65,7 +66,7 @@ export function EntryImagePicker({
               <button
                 type="button"
                 aria-label="既存画像を削除"
-                onClick={() => onRemoveExisting(index)}
+                {...bindTap(() => onRemoveExisting(index))}
                 className="absolute right-1 top-1 rounded-full bg-black/45 p-1 text-white"
               >
                 <XMarkIcon className="h-4 w-4" />
@@ -78,7 +79,7 @@ export function EntryImagePicker({
               <button
                 type="button"
                 aria-label="追加画像を削除"
-                onClick={() => onRemoveNew(index)}
+                {...bindTap(() => onRemoveNew(index))}
                 className="absolute right-1 top-1 rounded-full bg-black/45 p-1 text-white"
               >
                 <XMarkIcon className="h-4 w-4" />

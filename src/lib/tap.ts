@@ -5,21 +5,21 @@ type TapProps<E extends HTMLElement> = {
   onClick: (event: MouseEvent<E>) => void;
 };
 
-export function bindTap<E extends HTMLElement>(handler: () => void): TapProps<E> {
-  let handledByPointer = false;
+let lastPointerHandledAt = 0;
 
+export function bindTap<E extends HTMLElement>(handler: () => void): TapProps<E> {
   return {
     onPointerUp(event) {
       if (event.pointerType === "mouse") {
         return;
       }
-      handledByPointer = true;
+      lastPointerHandledAt = Date.now();
       event.preventDefault();
       handler();
     },
     onClick(event) {
-      if (handledByPointer) {
-        handledByPointer = false;
+      // Ignore synthetic click that follows touch/pen pointerup on iOS.
+      if (Date.now() - lastPointerHandledAt < 500) {
         event.preventDefault();
         return;
       }

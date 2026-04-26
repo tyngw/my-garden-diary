@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ArchiveBoxArrowDownIcon, ArchiveBoxXMarkIcon, PlusIcon, TrashIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { bindTap } from "@/lib/tap";
 import type { PlantType } from "@/lib/types";
@@ -26,6 +26,7 @@ function cloneTypes(items: PlantType[]): DraftPlantType[] {
 }
 
 export function PlantTypeSheet({ open, plantTypes, onClose, onUpdated }: Props) {
+  const draftIdSeq = useRef(0);
   const [newName, setNewName] = useState("");
   const [draftTypes, setDraftTypes] = useState<DraftPlantType[]>([]);
   const [entryCount, setEntryCount] = useState<Record<string, number>>({});
@@ -81,7 +82,7 @@ export function PlantTypeSheet({ open, plantTypes, onClose, onUpdated }: Props) 
     setDraftTypes((prev) => [
       ...prev,
       {
-        id: `tmp-${crypto.randomUUID()}`,
+        id: `tmp-${draftIdSeq.current++}`,
         name,
         archived: false,
         createdAt: now,

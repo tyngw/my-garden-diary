@@ -21,6 +21,13 @@ export function CalendarGrid({ monthDate, entries }: Props) {
   const last = endOfMonth(monthDate);
   const days = eachDayOfInterval({ start: first, end: last });
   const offset = getDay(first);
+  const trailing = (7 - ((offset + days.length) % 7)) % 7;
+  const cells: Array<Date | null> = [
+    ...Array.from({ length: offset }).map(() => null),
+    ...days,
+    ...Array.from({ length: trailing }).map(() => null),
+  ];
+  const rows = cells.length / 7;
 
   const map = entries.reduce<Record<string, DiaryEntry[]>>((acc, entry) => {
     acc[entry.date] = [...(acc[entry.date] ?? []), entry];
@@ -28,34 +35,39 @@ export function CalendarGrid({ monthDate, entries }: Props) {
   }, {});
 
   return (
-    <section className="rounded-[1.75rem] border border-[var(--line)] bg-[var(--surface-soft)] px-3 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.1)] sm:px-4">
-      <div className="mb-3 grid grid-cols-7 text-center text-xs font-semibold tracking-wide text-[var(--ink-soft)]">
+    <section className="overflow-hidden rounded-[1.25rem] border border-[rgb(47_122_89/55%)] bg-[var(--surface-soft)]">
+      <div className="grid grid-cols-7 text-center text-xs font-semibold tracking-wide text-[var(--ink-soft)]">
         {weekLabels.map((label) => (
-          <p key={label}>{label}</p>
+          <p key={label} className="border-b border-[rgb(47_122_89/40%)] px-1 py-2">{label}</p>
         ))}
       </div>
-      <div className="grid grid-cols-7 gap-1.5 sm:gap-2">
-        {Array.from({ length: offset }).map((_, i) => (
-          <div key={`blank-${i}`} className="h-18" />
-        ))}
-        {days.map((day) => {
+      <div className="grid grid-cols-7">
+        {cells.map((day, index) => {
+          const col = index % 7;
+          const row = Math.floor(index / 7);
+          const gridLineClass = [
+            col < 6 ? "border-r border-[rgb(47_122_89/40%)]" : "",
+            row < rows - 1 ? "border-b border-[rgb(47_122_89/40%)]" : "",
+          ]
+            .filter(Boolean)
+            .join(" ");
+
+          if (!day) {
+            return <div key={`blank-${index}`} className={`min-h-[4.6rem] ${gridLineClass}`} />;
+          }
+
           const dateKey = format(day, "yyyy-MM-dd");
           const items = map[dateKey] ?? [];
           const target = items.length > 1 ? `/entries/date/${dateKey}` : `/entries/${items[0]?.id}`;
           const today = isToday(day);
-          const hasEntries = items.length > 0;
-          const cellClass = `flex h-18 flex-col rounded-xl border px-1.5 py-1.5 ${
-            today
-              ? "border-[#4cae68] bg-[#1f5c44] shadow-[0_10px_24px_-18px_rgba(0,0,0,0.4)]"
-              : hasEntries
-                ? "border-[#2f7a59] bg-[#184b37] shadow-[0_10px_24px_-20px_rgba(0,0,0,0.3)]"
-                : "border-[#2f7a59] bg-[rgba(15,57,43,0.6)]"
-          }`;
+          const numberClass = today
+            ? "inline-flex min-h-6 min-w-6 items-center justify-center rounded-full bg-[#4cae68] px-1 text-sm font-bold text-[#f7fff9]"
+            : "text-sm font-semibold text-[var(--ink)]";
           return (
             items.length ? (
-              <Link key={dateKey} href={target} className={`${cellClass} relative z-10 touch-manipulation`} {...bindTap(() => router.push(target))}>
+              <Link key={dateKey} href={target} className={`relative z-10 flex min-h-[4.6rem] flex-col px-1.5 py-1.5 touch-manipulation ${gridLineClass}`} {...bindTap(() => router.push(target))}>
                 <div className="flex h-6 items-center justify-center">
-                  <span className={`text-sm font-semibold ${today ? "text-[#a9f3c1]" : "text-[var(--ink)]"}`}>{format(day, "d")}</span>
+                  <span className={numberClass}>{format(day, "d")}</span>
                 </div>
                 <div className="flex h-10 items-center justify-center">
                   {items[0]?.imageUrls[0] ? (
@@ -66,9 +78,9 @@ export function CalendarGrid({ monthDate, entries }: Props) {
                 </div>
               </Link>
             ) : (
-              <div key={dateKey} className={cellClass}>
+              <div key={dateKey} className={`flex min-h-[4.6rem] flex-col px-1.5 py-1.5 ${gridLineClass}`}>
                 <div className="flex h-6 items-center justify-center">
-                  <span className={`text-sm font-semibold ${today ? "text-[#204631]" : "text-[var(--ink)]"}`}>{format(day, "d")}</span>
+                  <span className={numberClass}>{format(day, "d")}</span>
                 </div>
                 <div className="h-10" />
               </div>
