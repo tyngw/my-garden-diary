@@ -1,4 +1,4 @@
-import { updateDb } from "@/lib/db";
+import { readDb, updateDb } from "@/lib/db";
 import { validateDate, validateImageUrls, validateMemo } from "@/lib/validation";
 import type { DiaryEntry } from "@/lib/types";
 
@@ -6,7 +6,7 @@ export async function GET(request: Request): Promise<Response> {
   const url = new URL(request.url);
   const month = url.searchParams.get("month");
   const date = url.searchParams.get("date");
-  const data = await updateDb((db) => db.entries);
+  const data = (await readDb()).entries;
   const filtered = data.filter((entry) => {
     if (month && !entry.date.startsWith(month)) {
       return false;

@@ -1,13 +1,11 @@
-import { updateDb } from "@/lib/db";
+import { readDb, updateDb } from "@/lib/db";
 import { validatePlantTypeName } from "@/lib/validation";
 import type { PlantType } from "@/lib/types";
 
 export async function GET(request: Request): Promise<Response> {
   const archived = new URL(request.url).searchParams.get("archived");
   const includeArchived = archived === "true";
-  const plantTypes = await updateDb((db) =>
-    db.plantTypes.filter((item) => includeArchived || !item.archived),
-  );
+  const plantTypes = (await readDb()).plantTypes.filter((item) => includeArchived || !item.archived);
   return Response.json({ plantTypes });
 }
 

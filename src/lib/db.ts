@@ -3,7 +3,7 @@ import path from "node:path";
 import type { DbSchema, LegacyDiaryEntry } from "@/lib/types";
 
 const dbPath = path.join(process.cwd(), "data", "db.json");
-let writeQueue: Promise<void> = Promise.resolve();
+let dbQueue: Promise<unknown> = Promise.resolve();
 
 const seed: DbSchema = {
   entries: [],
@@ -52,25 +52,39 @@ export async function ensureDb(): Promise<void> {
   }
 }
 
-export async function readDb(): Promise<DbSchema> {
+async function readFromDisk(): Promise<DbSchema> {
   await ensureDb();
   const raw = await fs.readFile(dbPath, "utf-8");
   return normalizeDb(JSON.parse(raw) as DbSchema);
 }
 
-export async function writeDb(next: DbSchema): Promise<void> {
+async function persistDb(next: DbSchema): Promise<void> {
   await ensureDb();
-  writeQueue = writeQueue.then(async () => {
-    await fs.writeFile(dbPath, JSON.stringify(normalizeDb(next), null, 2), "utf-8");
-  });
-  await writeQueue;
+  const tempPath = `${dbPath}.tmp`;
+  await fs.writeFile(tempPath, JSON.stringify(normalizeDb(next), null, 2), "utf-8");
+  await fs.rename(tempPath, dbPath);
+}
+
+export async function readDb(): Promise<DbSchema> {
+  await dbQueue;
+  return readFromDisk();
+}
+
+export async function writeDb(next: DbSchema): Promise<void> {
+  const operation = dbQueue.then(() => persistDb(next));
+  dbQueue = operation.catch(() => undefined);
+  await operation;
 }
 
 export async function updateDb<T>(
   updater: (db: DbSchema) => T | Promise<T>,
 ): Promise<T> {
-  const db = await readDb();
-  const result = await updater(db);
-  await writeDb(db);
-  return result;
+  const operation = dbQueue.then(async () => {
+    const db = await readFromDisk();
+    const result = await updater(db);
+    await persistDb(db);
+    return result;
+  });
+  dbQueue = operation.catch(() => undefined);
+  return operation;
 }

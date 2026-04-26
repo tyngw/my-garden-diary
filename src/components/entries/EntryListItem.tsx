@@ -13,9 +13,9 @@ export function EntryListItem({ entry, plantType }: Props) {
 
   return (
     <Link href={`/entries/${entry.id}`} className="app-card flex items-center gap-3 p-3 transition hover:translate-y-[-1px]">
-      <div className="flex h-16 w-16 items-center justify-center rounded-xl border border-[#d6e5dc] bg-[#f6faf7]">
+      <div className="relative flex h-16 w-16 items-center justify-center overflow-hidden rounded-xl border border-[#d6e5dc] bg-[#f6faf7]">
         {thumbnailUrl ? (
-          <Image src={thumbnailUrl} alt="entry" width={64} height={64} className="h-16 w-16 rounded-xl object-cover" />
+          <Image src={thumbnailUrl} alt="entry" fill sizes="64px" className="object-cover" />
         ) : (
           <ChatBubbleLeftEllipsisIcon className="h-8 w-8 text-[#ea8a3a]" />
         )}

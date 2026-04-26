@@ -1,11 +1,11 @@
-import { updateDb } from "@/lib/db";
+import { readDb, updateDb } from "@/lib/db";
 import { validateDate, validateImageUrls, validateMemo } from "@/lib/validation";
 
 type Params = { params: Promise<{ id: string }> };
 
 export async function GET(_: Request, { params }: Params): Promise<Response> {
   const { id } = await params;
-  const entry = await updateDb((db) => db.entries.find((item) => item.id === id));
+  const entry = (await readDb()).entries.find((item) => item.id === id);
   if (!entry) {
     return Response.json({ error: "記録が見つかりません" }, { status: 404 });
   }

@@ -25,8 +25,8 @@ export default function EntryDetailPage() {
       if (json.entry) {
         setEntry(json.entry);
       }
-    })().catch(console.error);
-    fetchPlantTypes(true).then(setPlantTypes).catch(console.error);
+    })().catch(() => setEntry(null));
+    fetchPlantTypes(true).then(setPlantTypes).catch(() => setPlantTypes([]));
   }, [params.id]);
 
   const plantName = plantTypes.find((p) => p.id === entry?.plantTypeId)?.name ?? "未分類";

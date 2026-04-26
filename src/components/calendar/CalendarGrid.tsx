@@ -2,8 +2,10 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay, isToday } from "date-fns";
 import { ChatBubbleLeftEllipsisIcon } from "@heroicons/react/24/solid";
+import { bindTap } from "@/lib/tap";
 import type { DiaryEntry } from "@/lib/types";
 
 type Props = {
@@ -14,6 +16,7 @@ type Props = {
 const weekLabels = ["日", "月", "火", "水", "木", "金", "土"];
 
 export function CalendarGrid({ monthDate, entries }: Props) {
+  const router = useRouter();
   const first = startOfMonth(monthDate);
   const last = endOfMonth(monthDate);
   const days = eachDayOfInterval({ start: first, end: last });
@@ -25,7 +28,7 @@ export function CalendarGrid({ monthDate, entries }: Props) {
   }, {});
 
   return (
-    <section className="app-panel px-3 py-4 sm:px-4">
+    <section className="rounded-[1.75rem] border border-[#5b8b71] bg-[rgba(11,48,36,0.72)] px-3 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] sm:px-4">
       <div className="mb-3 grid grid-cols-7 text-center text-xs font-semibold tracking-wide text-[var(--ink-soft)]">
         {weekLabels.map((label) => (
           <p key={label}>{label}</p>
@@ -40,29 +43,32 @@ export function CalendarGrid({ monthDate, entries }: Props) {
           const items = map[dateKey] ?? [];
           const target = items.length > 1 ? `/entries/date/${dateKey}` : `/entries/${items[0]?.id}`;
           const today = isToday(day);
+          const hasEntries = items.length > 0;
           const cellClass = `flex h-18 flex-col rounded-xl border px-1.5 py-1.5 ${
             today
-              ? "border-[var(--primary)] bg-[var(--surface)]"
-              : "border-[var(--line)] bg-[var(--surface-soft)]"
+              ? "border-[#98c9a5] bg-[#f2faf2] shadow-[0_10px_24px_-18px_rgba(20,60,40,0.55)]"
+              : hasEntries
+                ? "border-[#bdd9c5] bg-[#ebf5ed] shadow-[0_10px_24px_-20px_rgba(20,60,40,0.45)]"
+                : "border-[#7ea891] bg-[rgba(223,239,226,0.18)]"
           }`;
           return (
             items.length ? (
-              <Link key={dateKey} href={target} className={`${cellClass} touch-manipulation`}>
+              <Link key={dateKey} href={target} className={`${cellClass} relative z-10 touch-manipulation`} {...bindTap(() => router.push(target))}>
                 <div className="flex h-6 items-center justify-center">
-                  <span className={`text-sm font-semibold ${today ? "text-[var(--accent)]" : "text-[var(--ink)]"}`}>{format(day, "d")}</span>
+                  <span className={`text-sm font-semibold ${today || hasEntries ? "text-[#204631]" : "text-[var(--ink)]"}`}>{format(day, "d")}</span>
                 </div>
                 <div className="flex h-10 items-center justify-center">
                   {items[0]?.imageUrls[0] ? (
                     <Image src={items[0].imageUrls[0]} alt="thumb" width={30} height={30} className="h-7 w-7 rounded-md object-cover" />
                   ) : (
-                    <ChatBubbleLeftEllipsisIcon className="h-5 w-5 text-[var(--primary)]" />
+                    <ChatBubbleLeftEllipsisIcon className="h-5 w-5 text-[#4d8e66]" />
                   )}
                 </div>
               </Link>
             ) : (
               <div key={dateKey} className={cellClass}>
                 <div className="flex h-6 items-center justify-center">
-                  <span className={`text-sm font-semibold ${today ? "text-[var(--accent)]" : "text-[var(--ink)]"}`}>{format(day, "d")}</span>
+                  <span className={`text-sm font-semibold ${today ? "text-[#204631]" : "text-[var(--ink)]"}`}>{format(day, "d")}</span>
                 </div>
                 <div className="h-10" />
               </div>

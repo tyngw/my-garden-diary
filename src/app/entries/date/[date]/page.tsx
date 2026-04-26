@@ -19,8 +19,8 @@ export default function EntryDatePage() {
       return;
     }
     setDate(value);
-    fetchEntriesByDate(value).then(setEntries).catch(console.error);
-    fetchPlantTypes(true).then(setPlantTypes).catch(console.error);
+    fetchEntriesByDate(value).then(setEntries).catch(() => setEntries([]));
+    fetchPlantTypes(true).then(setPlantTypes).catch(() => setPlantTypes([]));
   }, [params.date]);
 
   return (

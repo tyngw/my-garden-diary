@@ -7,21 +7,29 @@ import { AppShell } from "@/components/layout/AppShell";
 import { CalendarGrid } from "@/components/calendar/CalendarGrid";
 import { fetchEntriesByMonth } from "@/lib/apiClient";
 import { toJapaneseMonthLabel } from "@/lib/date";
+import { bindTap } from "@/lib/tap";
 import type { DiaryEntry } from "@/lib/types";
 
 export default function CalendarPage() {
   const [month, setMonth] = useState(new Date());
   const [entries, setEntries] = useState<DiaryEntry[]>([]);
+  const [loadError, setLoadError] = useState("");
 
   useEffect(() => {
-    fetchEntriesByMonth(format(month, "yyyy-MM")).then(setEntries).catch(console.error);
+    setLoadError("");
+    fetchEntriesByMonth(format(month, "yyyy-MM"))
+      .then(setEntries)
+      .catch(() => {
+        setEntries([]);
+        setLoadError("記録の読み込みに失敗しました");
+      });
   }, [month]);
   const recordDays = new Set(entries.map((entry) => entry.date)).size;
   const recordCount = entries.length;
 
   return (
     <AppShell>
-      <section className="app-card mb-4 p-3 sm:p-4">
+      <section className="mb-4 px-1 pt-1 sm:px-2">
         <div className="mb-4 flex items-end justify-between gap-3">
           <div>
             <p className="text-xs font-semibold tracking-wide text-[var(--ink-soft)]">GARDEN CALENDAR</p>
@@ -39,7 +47,7 @@ export default function CalendarPage() {
         <div className="mb-3 grid grid-cols-[3rem_1fr_3rem] items-center gap-2">
           <button
             type="button"
-            onClick={() => setMonth((v) => subMonths(v, 1))}
+            {...bindTap(() => setMonth((v) => subMonths(v, 1)))}
             className="app-btn-secondary touch-manipulation flex h-12 w-12 items-center justify-center"
             aria-label="前の月"
           >
@@ -48,13 +56,14 @@ export default function CalendarPage() {
           <h3 className="min-w-0 text-center text-2xl font-extrabold text-[var(--ink)] sm:text-3xl">{toJapaneseMonthLabel(month)}</h3>
           <button
             type="button"
-            onClick={() => setMonth((v) => addMonths(v, 1))}
+            {...bindTap(() => setMonth((v) => addMonths(v, 1)))}
             className="app-btn-secondary touch-manipulation flex h-12 w-12 items-center justify-center"
             aria-label="次の月"
           >
             <ChevronRightIcon className="h-6 w-6" />
           </button>
         </div>
+        {loadError ? <p className="mb-3 text-sm text-[#dcefdc]">{loadError}</p> : null}
         <CalendarGrid monthDate={month} entries={entries} />
       </section>
     </AppShell>

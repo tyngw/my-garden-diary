@@ -4,20 +4,9 @@ import Link from "next/link";
 import { useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { ArrowLeftIcon, Bars3Icon, PlusIcon, XMarkIcon } from "@heroicons/react/24/outline";
-import type { TouchEvent } from "react";
+import { bindTap } from "@/lib/tap";
 
 type Props = { title?: string };
-
-/** iOS Safari 用: touchend で即時実行し、合成 click は無視する */
-function tap(handler: () => void) {
-  return {
-    onTouchEnd(e: TouchEvent) {
-      e.preventDefault();
-      handler();
-    },
-    onClick: handler,
-  };
-}
 
 export function AppHeader({ title = "MyGarden Diary" }: Props) {
   const router = useRouter();
@@ -45,13 +34,14 @@ export function AppHeader({ title = "MyGarden Diary" }: Props) {
                 href="/entries/new"
                 aria-label="新しい記録"
                 className="touch-manipulation rounded-full border border-white/12 bg-white/8 p-2 hover:bg-white/15"
+                {...bindTap(() => router.push("/entries/new"))}
               >
                 <PlusIcon className="h-5 w-5" />
               </Link>
             ) : (
               <button
                 type="button"
-                {...tap(() => router.back())}
+                {...bindTap(() => router.back())}
                 className="touch-manipulation rounded-full border border-white/12 bg-white/8 p-2 hover:bg-white/15"
                 aria-label="戻る"
               >
@@ -67,7 +57,7 @@ export function AppHeader({ title = "MyGarden Diary" }: Props) {
                 type="button"
                 className="touch-manipulation rounded-full border border-white/12 bg-white/8 p-2 hover:bg-white/15"
                 aria-label="メニュー"
-                {...tap(toggleMenu)}
+                {...bindTap(toggleMenu)}
               >
                 {menuOpen ? <XMarkIcon className="h-5 w-5" /> : <Bars3Icon className="h-5 w-5" />}
               </button>
@@ -81,7 +71,7 @@ export function AppHeader({ title = "MyGarden Diary" }: Props) {
             type="button"
             aria-label="メニューを閉じる"
             className="fixed inset-0 top-12 z-30 bg-black/25"
-            {...tap(closeMenu)}
+            {...bindTap(closeMenu)}
           />
           <nav className="fixed right-2 top-15 z-40 w-48 rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-2 text-[var(--ink)] shadow-[0_24px_60px_-30px_rgba(0,0,0,0.7)] sm:right-[max(0.75rem,calc((100vw-860px)/2+0.75rem))]">
             <div className="space-y-1">
