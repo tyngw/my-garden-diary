@@ -58,10 +58,81 @@ export default function EntryDetailPage() {
   return (
     <AppShell title="記録詳細" backHref={backHref}>
       <section className="app-card space-y-3 p-4">
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <p className="text-sm text-[var(--ink-soft)]">{entry?.date}</p>
+        <div className="space-y-2">
+          <div className="grid grid-cols-[2.5rem_1fr_2.5rem] items-center gap-1">
+            <button
+              type="button"
+              aria-label="前の記録"
+              title="前の記録"
+              disabled={currentIndex >= relatedEntries.length - 1}
+              className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-[var(--line)] bg-[var(--surface-soft)] text-[var(--ink-soft)] disabled:opacity-40"
+              {...bindTap(() => {
+                const prevIndex = currentIndex + 1;
+                if (prevIndex < relatedEntries.length) {
+                  router.push(`/entries/${relatedEntries[prevIndex].id}`);
+                }
+              })}
+            >
+              <ChevronLeftIcon className="h-5 w-5" />
+            </button>
+            <p className="text-center text-sm font-semibold text-[var(--ink-soft)]">{entry?.date}</p>
+            <button
+              type="button"
+              aria-label="次の記録"
+              title="次の記録"
+              disabled={currentIndex <= 0}
+              className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-[var(--line)] bg-[var(--surface-soft)] text-[var(--ink-soft)] disabled:opacity-40"
+              {...bindTap(() => {
+                const nextIndex = currentIndex - 1;
+                if (nextIndex >= 0) {
+                  router.push(`/entries/${relatedEntries[nextIndex].id}`);
+                }
+              })}
+            >
+              <ChevronRightIcon className="h-5 w-5" />
+            </button>
+          </div>
+          <div className="flex items-center justify-between gap-3">
             <p className="text-lg font-bold text-[var(--ink)]">{plantName}</p>
+            {entry ? (
+              <div className="flex items-center gap-2">
+                <Link
+                  href={`/entries/${entry.id}/edit`}
+                  aria-label="編集する"
+                  title="編集する"
+                  className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-[var(--line)] bg-[var(--surface-soft)] text-[var(--ink-soft)]"
+                >
+                  <PencilSquareIcon className="h-5 w-5" />
+                </Link>
+                <button
+                  type="button"
+                  aria-label="削除する"
+                  title="削除する"
+                  disabled={deleting}
+                  className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-[#dd8b8b] bg-[#fff3f3] text-[#b04242] disabled:opacity-50"
+                  {...bindTap(async () => {
+                    if (!window.confirm("この記録を削除しますか？")) {
+                      return;
+                    }
+                    setDeleting(true);
+                    try {
+                      const res = await fetch(`/api/entries/${entry.id}`, { method: "DELETE" });
+                      const json = (await res.json()) as { error?: string };
+                      if (!res.ok) {
+                        throw new Error(json.error ?? "削除に失敗しました");
+                      }
+                      router.push("/calendar");
+                    } catch (error) {
+                      window.alert(error instanceof Error ? error.message : "削除に失敗しました");
+                    } finally {
+                      setDeleting(false);
+                    }
+                  })}
+                >
+                  <TrashIcon className="h-5 w-5" />
+                </button>
+              </div>
+            ) : null}
           </div>
         </div>
         {entry?.imageUrls.length ? (
@@ -79,68 +150,6 @@ export default function EntryDetailPage() {
           </div>
         ) : null}
         <p className="app-panel min-h-24 whitespace-pre-wrap p-3 text-[var(--ink)]">{entry?.memo || "メモはありません"}</p>
-        {entry ? (
-          <div className="flex flex-wrap gap-2">
-            <Link href={`/entries/${entry.id}/edit`} className="app-btn inline-flex items-center gap-1 px-4 py-2">
-              <PencilSquareIcon className="h-5 w-5" />編集する
-            </Link>
-            <button
-              type="button"
-              disabled={deleting}
-              className="inline-flex items-center gap-1 rounded-xl border border-[#dd8b8b] bg-[#fff3f3] px-4 py-2 text-sm font-semibold text-[#b04242] disabled:opacity-50"
-              {...bindTap(async () => {
-                if (!window.confirm("この記録を削除しますか？")) {
-                  return;
-                }
-                setDeleting(true);
-                try {
-                  const res = await fetch(`/api/entries/${entry.id}`, { method: "DELETE" });
-                  const json = (await res.json()) as { error?: string };
-                  if (!res.ok) {
-                    throw new Error(json.error ?? "削除に失敗しました");
-                  }
-                  router.push("/calendar");
-                } catch (error) {
-                  window.alert(error instanceof Error ? error.message : "削除に失敗しました");
-                } finally {
-                  setDeleting(false);
-                }
-              })}
-            >
-              <TrashIcon className="h-5 w-5" />削除
-            </button>
-            {relatedEntries.length > 1 && (
-              <>
-                <button
-                  type="button"
-                  disabled={currentIndex >= relatedEntries.length - 1}
-                  className="inline-flex items-center gap-1 rounded-xl border border-[var(--line)] bg-[var(--surface-soft)] px-4 py-2 text-sm font-semibold text-[var(--ink-soft)] disabled:opacity-50"
-                  {...bindTap(() => {
-                    const prevIndex = currentIndex + 1;
-                    if (prevIndex < relatedEntries.length) {
-                      router.push(`/entries/${relatedEntries[prevIndex].id}`);
-                    }
-                  })}
-                >
-                  <ChevronLeftIcon className="h-5 w-5" />前の記録
-                </button>
-                <button
-                  type="button"
-                  disabled={currentIndex <= 0}
-                  className="inline-flex items-center gap-1 rounded-xl border border-[var(--line)] bg-[var(--surface-soft)] px-4 py-2 text-sm font-semibold text-[var(--ink-soft)] disabled:opacity-50"
-                  {...bindTap(() => {
-                    const nextIndex = currentIndex - 1;
-                    if (nextIndex >= 0) {
-                      router.push(`/entries/${relatedEntries[nextIndex].id}`);
-                    }
-                  })}
-                >
-                  次の記録<ChevronRightIcon className="h-5 w-5" />
-                </button>
-              </>
-            )}
-          </div>
-        ) : null}
       </section>
       {selectedImage ? (
         <ImagePreviewModal imageUrl={selectedImage} onClose={() => setSelectedImage(null)} />
