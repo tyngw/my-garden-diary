@@ -4,8 +4,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { PencilSquareIcon, TrashIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import { PencilSquareIcon, TrashIcon, ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
 import { AppShell } from "@/components/layout/AppShell";
+import { ImagePreviewModal } from "@/components/entries/ImagePreviewModal";
 import { fetchPlantTypes } from "@/lib/apiClient";
 import { bindTap } from "@/lib/tap";
 import type { DiaryEntry, PlantType } from "@/lib/types";
@@ -18,6 +19,8 @@ export default function EntryDetailPage() {
   const [plantTypes, setPlantTypes] = useState<PlantType[]>([]);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [relatedEntries, setRelatedEntries] = useState<DiaryEntry[]>([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
 
   useEffect(() => {
     const id = params.id;
@@ -29,6 +32,20 @@ export default function EntryDetailPage() {
       const json = (await res.json()) as { entry?: DiaryEntry };
       if (json.entry) {
         setEntry(json.entry);
+
+        // 同じ植物の記録をすべて取得
+        if (json.entry.plantTypeId) {
+          const relatedRes = await fetch(
+            `/api/entries?plantTypeId=${encodeURIComponent(json.entry.plantTypeId)}&limit=1000`
+          );
+          const relatedJson = (await relatedRes.json()) as { entries?: DiaryEntry[] };
+          if (relatedJson.entries) {
+            const sorted = relatedJson.entries.sort((a, b) => b.date.localeCompare(a.date));
+            setRelatedEntries(sorted);
+            const idx = sorted.findIndex((e) => e.id === id);
+            setCurrentIndex(idx >= 0 ? idx : 0);
+          }
+        }
       }
     })().catch(() => setEntry(null));
     fetchPlantTypes(true).then(setPlantTypes).catch(() => setPlantTypes([]));
@@ -92,25 +109,41 @@ export default function EntryDetailPage() {
             >
               <TrashIcon className="h-5 w-5" />削除
             </button>
+            {relatedEntries.length > 1 && (
+              <>
+                <button
+                  type="button"
+                  disabled={currentIndex >= relatedEntries.length - 1}
+                  className="inline-flex items-center gap-1 rounded-xl border border-[var(--line)] bg-[var(--surface-soft)] px-4 py-2 text-sm font-semibold text-[var(--ink-soft)] disabled:opacity-50"
+                  {...bindTap(() => {
+                    const prevIndex = currentIndex + 1;
+                    if (prevIndex < relatedEntries.length) {
+                      router.push(`/entries/${relatedEntries[prevIndex].id}`);
+                    }
+                  })}
+                >
+                  <ChevronLeftIcon className="h-5 w-5" />前の記録
+                </button>
+                <button
+                  type="button"
+                  disabled={currentIndex <= 0}
+                  className="inline-flex items-center gap-1 rounded-xl border border-[var(--line)] bg-[var(--surface-soft)] px-4 py-2 text-sm font-semibold text-[var(--ink-soft)] disabled:opacity-50"
+                  {...bindTap(() => {
+                    const nextIndex = currentIndex - 1;
+                    if (nextIndex >= 0) {
+                      router.push(`/entries/${relatedEntries[nextIndex].id}`);
+                    }
+                  })}
+                >
+                  次の記録<ChevronRightIcon className="h-5 w-5" />
+                </button>
+              </>
+            )}
           </div>
         ) : null}
       </section>
       {selectedImage ? (
-        <div className="fixed inset-0 z-50 bg-black/90 p-4" role="dialog" aria-modal="true">
-          <button
-            type="button"
-            aria-label="画像表示を閉じる"
-            className="absolute right-4 top-4 rounded-full border border-white/30 bg-white/10 p-2 text-white"
-            {...bindTap(() => setSelectedImage(null))}
-          >
-            <XMarkIcon className="h-6 w-6" />
-          </button>
-          <button type="button" className="h-full w-full" {...bindTap(() => setSelectedImage(null))}>
-            <div className="relative h-full w-full">
-              <Image src={selectedImage} alt="全画面表示画像" fill className="object-contain" sizes="100vw" />
-            </div>
-          </button>
-        </div>
+        <ImagePreviewModal imageUrl={selectedImage} onClose={() => setSelectedImage(null)} />
       ) : null}
     </AppShell>
   );

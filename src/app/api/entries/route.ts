@@ -6,12 +6,16 @@ export async function GET(request: Request): Promise<Response> {
   const url = new URL(request.url);
   const month = url.searchParams.get("month");
   const date = url.searchParams.get("date");
+  const plantTypeId = url.searchParams.get("plantTypeId");
   const data = (await readDb()).entries;
   const filtered = data.filter((entry) => {
     if (month && !entry.date.startsWith(month)) {
       return false;
     }
     if (date && entry.date !== date) {
+      return false;
+    }
+    if (plantTypeId && entry.plantTypeId !== plantTypeId) {
       return false;
     }
     return true;

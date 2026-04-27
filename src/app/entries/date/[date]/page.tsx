@@ -30,7 +30,7 @@ export default function EntryDatePage() {
           .sort((a, b) => b.localeCompare(a))
           .map((date) => ({ date, entries: grouped[date] }));
         setGroups(nextGroups);
-        setOpenDate(nextGroups[0]?.date ?? "");
+        setOpenDate(params.date || (nextGroups[0]?.date ?? ""));
       })
       .catch(() => {
         setGroups([]);
