@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useEffect, useRef, useState, useCallback } from "react";
 import { XMarkIcon } from "@heroicons/react/24/outline";
+import { bindTap } from "@/lib/tap";
 
 type Props = {
   imageUrl: string;
@@ -137,11 +138,12 @@ export function ImagePreviewModal({ imageUrl, onClose }: Props) {
       <button
         type="button"
         aria-label="画像表示を閉じる"
-        className="absolute right-4 top-4 rounded-full border border-white/30 bg-white/10 p-2 text-white"
+        className="absolute right-4 top-4 z-20 rounded-full border border-white/30 bg-white/10 p-2 text-white"
         onClick={(e) => {
           e.stopPropagation();
           onClose();
         }}
+        {...bindTap(onClose)}
       >
         <XMarkIcon className="h-6 w-6" />
       </button>
