@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay, isToday } from "date-fns";
 import { ChatBubbleLeftEllipsisIcon } from "@heroicons/react/24/solid";
@@ -17,6 +18,7 @@ const weekLabels = ["日", "月", "火", "水", "木", "金", "土"];
 
 export function CalendarGrid({ monthDate, entries }: Props) {
   const router = useRouter();
+  const [loadedThumbs, setLoadedThumbs] = useState<Record<string, boolean>>({});
   const first = startOfMonth(monthDate);
   const last = endOfMonth(monthDate);
   const days = eachDayOfInterval({ start: first, end: last });
@@ -33,6 +35,10 @@ export function CalendarGrid({ monthDate, entries }: Props) {
     acc[entry.date] = [...(acc[entry.date] ?? []), entry];
     return acc;
   }, {});
+
+  useEffect(() => {
+    setLoadedThumbs({});
+  }, [entries, monthDate]);
 
   return (
     <section className="overflow-hidden rounded-[1.25rem] border border-[rgb(47_122_89/55%)] bg-[var(--surface-soft)]">
@@ -72,21 +78,33 @@ export function CalendarGrid({ monthDate, entries }: Props) {
                 </div>
                 <div className="relative flex h-10 items-center justify-center">
                   {imageThumbs.length ? (
-                    imageThumbs.map((url, thumbIndex) => (
-                      <Image
-                        key={`${url}-${thumbIndex}`}
-                        src={url}
-                        alt="thumb"
-                        width={30}
-                        height={30}
-                        className="absolute h-7 w-7 rounded-md border border-white/60 object-cover shadow-sm"
-                        style={{
-                          transform: `translate(${thumbIndex * 5 - 5}px, ${thumbIndex * 2}px)`,
-                          opacity: 1 - thumbIndex * 0.25,
-                          zIndex: 30 - thumbIndex,
-                        }}
-                      />
-                    ))
+                    imageThumbs.map((url, thumbIndex) => {
+                      const thumbKey = `${dateKey}-${thumbIndex}-${url}`;
+                      const shown = !!loadedThumbs[thumbKey];
+                      return (
+                        <Image
+                          key={thumbKey}
+                          src={url}
+                          alt="thumb"
+                          width={30}
+                          height={30}
+                          onLoadingComplete={() => {
+                            setLoadedThumbs((current) => {
+                              if (current[thumbKey]) {
+                                return current;
+                              }
+                              return { ...current, [thumbKey]: true };
+                            });
+                          }}
+                          className={`absolute h-7 w-7 rounded-md object-cover shadow-sm transition-opacity duration-200 ${shown ? "opacity-100" : "opacity-0"}`}
+                          style={{
+                            transform: `translate(${thumbIndex * 5 - 5}px, ${thumbIndex * 2}px)`,
+                            opacity: shown ? 1 - thumbIndex * 0.25 : 0,
+                            zIndex: 30 - thumbIndex,
+                          }}
+                        />
+                      );
+                    })
                   ) : (
                     <ChatBubbleLeftEllipsisIcon className="h-5 w-5 text-[var(--accent)]" />
                   )}

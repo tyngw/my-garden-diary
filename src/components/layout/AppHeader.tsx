@@ -10,9 +10,10 @@ import { bindTap } from "@/lib/tap";
 type Props = {
   title?: string;
   backHref?: string;
+  hideMenu?: boolean;
 };
 
-export function AppHeader({ title = "MyGarden Diary", backHref = "/calendar" }: Props) {
+export function AppHeader({ title = "MyGarden Diary", backHref = "/calendar", hideMenu = false }: Props) {
   const router = useRouter();
   const pathname = usePathname();
   const isCalendar = pathname === "/calendar";
@@ -60,19 +61,21 @@ export function AppHeader({ title = "MyGarden Diary", backHref = "/calendar" }: 
               <span className="truncate">{title}</span>
             </h1>
             <div className="absolute inset-y-0 right-0 flex items-center">
-              <button
-                type="button"
-                className="touch-manipulation rounded-full border border-white/12 bg-white/8 p-2 hover:bg-white/15"
-                aria-label="メニュー"
-                {...bindTap(toggleMenu)}
-              >
-                {menuOpen ? <XMarkIcon className="h-5 w-5" /> : <Bars3Icon className="h-5 w-5" />}
-              </button>
+              {hideMenu ? null : (
+                <button
+                  type="button"
+                  className="touch-manipulation rounded-full border border-white/12 bg-white/8 p-2 hover:bg-white/15"
+                  aria-label="メニュー"
+                  {...bindTap(toggleMenu)}
+                >
+                  {menuOpen ? <XMarkIcon className="h-5 w-5" /> : <Bars3Icon className="h-5 w-5" />}
+                </button>
+              )}
             </div>
           </div>
         </div>
       </header>
-      {menuOpen ? (
+      {!hideMenu && menuOpen ? (
         <>
           <button
             type="button"

@@ -26,7 +26,7 @@ export default function NewEntryPage() {
   }, []);
 
   return (
-    <AppShell title="新規記録" backHref="/calendar">
+    <AppShell title="新規記録" backHref="/calendar" hideMenu modal>
       {initialDate ? (
         <EntryForm
           key={initialDate}

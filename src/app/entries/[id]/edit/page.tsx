@@ -32,14 +32,14 @@ export default function EditEntryPage() {
 
   if (!entry) {
     return (
-      <AppShell title="編集" backHref={`/entries/${params.id}`}>
+      <AppShell title="編集" backHref={`/entries/${params.id}`} hideMenu modal>
         <section className="app-card p-4 text-sm text-[var(--ink-soft)]">読み込み中...</section>
       </AppShell>
     );
   }
 
   return (
-    <AppShell title="記録編集" backHref={`/entries/${entry.id}`}>
+    <AppShell title="記録編集" backHref={`/entries/${entry.id}`} hideMenu modal>
       <EntryForm
         initial={entry}
         plantTypes={plantTypes}

@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { PencilSquareIcon } from "@heroicons/react/24/outline";
+import { CheckIcon } from "@heroicons/react/24/solid";
 import { compressImage } from "@/lib/imageCompression";
 import { EntryImagePicker } from "@/components/entries/EntryImagePicker";
 import { PlantTypeSheet } from "@/components/entries/PlantTypeSheet";
@@ -77,6 +78,16 @@ export function EntryForm({ initial, plantTypes, settings, onSubmit, submitLabel
 
   return (
     <>
+      <button
+        type="button"
+        aria-label={submitLabel}
+        title={submitLabel}
+        {...bindTap(submit)}
+        disabled={busy || !date}
+        className="fixed right-2 top-[calc(env(safe-area-inset-top)+0.4rem)] z-40 inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/12 bg-white/8 text-[#f3fff7] backdrop-blur-sm disabled:opacity-45 sm:right-[max(0.75rem,calc((100vw-640px)/2+0.75rem))]"
+      >
+        <CheckIcon className="h-5 w-5" />
+      </button>
       <section className="space-y-4 rounded-3xl bg-[#1b6a4b] p-4 text-[#f3fff7]">
         <label className="block"><p className="mb-1 text-sm text-[#daf3e1]">日付</p><input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="ios-safe-field ios-safe-field--compact w-full rounded-lg bg-[#f7fff9] px-3 text-[#1f4d35]" /></label>
         <label className="block">
@@ -97,7 +108,6 @@ export function EntryForm({ initial, plantTypes, settings, onSubmit, submitLabel
           onRemoveNew={(index) => setImageFiles((items) => items.filter((_, itemIndex) => itemIndex !== index))}
         />
         {error ? <p className="text-sm text-[#ffd6d6]">{error}</p> : null}
-        <button type="button" {...bindTap(submit)} disabled={busy || !date} className="w-full rounded-xl bg-[#4cae68] px-4 py-3 font-semibold text-[#f3fff7] disabled:opacity-50">{busy ? "保存中..." : submitLabel}</button>
       </section>
       <PlantTypeSheet
         open={sheetOpen}

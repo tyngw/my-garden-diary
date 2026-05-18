@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams } from "next/navigation";
 import { ChevronDownIcon } from "@heroicons/react/24/outline";
 import { AppShell } from "@/components/layout/AppShell";
@@ -18,6 +18,7 @@ export default function EntryDatePage() {
   const [groups, setGroups] = useState<DateGroup[]>([]);
   const [openDate, setOpenDate] = useState("");
   const [plantTypes, setPlantTypes] = useState<PlantType[]>([]);
+  const groupRefs = useRef<Record<string, HTMLElement | null>>({});
 
   useEffect(() => {
     fetchAllEntries()
@@ -39,13 +40,33 @@ export default function EntryDatePage() {
     fetchPlantTypes(true).then(setPlantTypes).catch(() => setPlantTypes([]));
   }, [params.date]);
 
+  useEffect(() => {
+    if (!openDate) {
+      return;
+    }
+    const target = groupRefs.current[openDate];
+    if (!target) {
+      return;
+    }
+    const timer = window.setTimeout(() => {
+      target.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 60);
+    return () => window.clearTimeout(timer);
+  }, [openDate, groups.length]);
+
   return (
     <AppShell title="同日の記録一覧" backHref="/calendar">
       <section className="space-y-3">
         {groups.map((group) => {
           const expanded = openDate === group.date;
           return (
-            <section key={group.date} className="app-card overflow-hidden">
+            <section
+              key={group.date}
+              className="app-card overflow-hidden"
+              ref={(node) => {
+                groupRefs.current[group.date] = node;
+              }}
+            >
               <button
                 type="button"
                 onClick={() => setOpenDate((current) => (current === group.date ? "" : group.date))}
