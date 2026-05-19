@@ -62,7 +62,7 @@ export default function EntryDatePage() {
           return (
             <section
               key={group.date}
-              className="app-card overflow-hidden"
+              className="app-card overflow-hidden scroll-mt-[calc(env(safe-area-inset-top)+4.75rem)]"
               ref={(node) => {
                 groupRefs.current[group.date] = node;
               }}

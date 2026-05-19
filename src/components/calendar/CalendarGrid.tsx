@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay, isToday } from "date-fns";
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay } from "date-fns";
 import { ChatBubbleLeftEllipsisIcon } from "@heroicons/react/24/solid";
 import { bindTap } from "@/lib/tap";
 import type { DiaryEntry } from "@/lib/types";
@@ -19,6 +19,7 @@ const weekLabels = ["日", "月", "火", "水", "木", "金", "土"];
 export function CalendarGrid({ monthDate, entries }: Props) {
   const router = useRouter();
   const [loadedThumbs, setLoadedThumbs] = useState<Record<string, boolean>>({});
+  const [todayKey, setTodayKey] = useState("");
   const first = startOfMonth(monthDate);
   const last = endOfMonth(monthDate);
   const days = eachDayOfInterval({ start: first, end: last });
@@ -39,6 +40,10 @@ export function CalendarGrid({ monthDate, entries }: Props) {
   useEffect(() => {
     setLoadedThumbs({});
   }, [entries, monthDate]);
+
+  useEffect(() => {
+    setTodayKey(format(new Date(), "yyyy-MM-dd"));
+  }, []);
 
   return (
     <section className="overflow-hidden rounded-[1.25rem] border border-[rgb(47_122_89/55%)] bg-[var(--surface-soft)]">
@@ -66,7 +71,7 @@ export function CalendarGrid({ monthDate, entries }: Props) {
           const items = map[dateKey] ?? [];
           const target = items.length > 1 ? `/entries/date/${dateKey}` : `/entries/${items[0]?.id}`;
           const imageThumbs = items.flatMap((item) => item.imageUrls).slice(0, 3);
-          const today = isToday(day);
+          const today = todayKey === dateKey;
           const numberClass = today
             ? "inline-flex min-h-6 min-w-6 items-center justify-center rounded-full bg-[#4cae68] px-1 text-sm font-bold text-[#f7fff9]"
             : "text-sm font-semibold text-[var(--ink)]";
@@ -96,7 +101,7 @@ export function CalendarGrid({ monthDate, entries }: Props) {
                               return { ...current, [thumbKey]: true };
                             });
                           }}
-                          className={`absolute h-7 w-7 rounded-md object-cover shadow-sm transition-opacity duration-200 ${shown ? "opacity-100" : "opacity-0"}`}
+                          className={`absolute h-7 w-7 rounded-md border border-white/60 object-cover shadow-sm transition-opacity duration-200 ${shown ? "opacity-100" : "opacity-0"}`}
                           style={{
                             transform: `translate(${thumbIndex * 5 - 5}px, ${thumbIndex * 2}px)`,
                             opacity: shown ? 1 - thumbIndex * 0.25 : 0,
@@ -116,7 +121,7 @@ export function CalendarGrid({ monthDate, entries }: Props) {
                 type="button"
                 className={`appearance-none border-0 bg-transparent text-inherit flex min-h-[4.6rem] w-full flex-col px-1.5 py-1.5 touch-manipulation ${gridLineClass}`}
                 {...bindTap(() => router.push(`/entries/new?date=${dateKey}`))}
-                aria-label={`${dateKey} の新規記録を作成`}
+                aria-label={`新規記録を追加 (${format(day, "M/d")})`}
               >
                 <div className="flex h-6 items-center justify-center">
                   <span className={numberClass}>{format(day, "d")}</span>
