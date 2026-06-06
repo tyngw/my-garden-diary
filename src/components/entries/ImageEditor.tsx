@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { XMarkIcon, ArrowPathIcon, ArrowUturnLeftIcon, ArrowUturnRightIcon } from "@heroicons/react/24/outline";
+import { XMarkIcon, ArrowPathRoundedSquareIcon, ArrowUturnLeftIcon, ArrowUturnRightIcon } from "@heroicons/react/24/outline";
 import { CheckIcon } from "@heroicons/react/24/solid";
 import { useDrawingCanvas } from "@/hooks/useDrawingCanvas";
 import { recognizeShape, MARKER_LINE_WIDTH, type Point, type RecognizedShape } from "@/lib/shapeRecognition";
@@ -164,7 +164,7 @@ export function ImageEditor({ imageSrc, onSave, onClose }: Props) {
         <div className="flex gap-2">
           <button type="button" aria-label="90度回転" onClick={handleRotate}
             className="flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-white">
-            <ArrowPathIcon className="h-5 w-5" />
+            <ArrowPathRoundedSquareIcon className="h-5 w-5" />
           </button>
           <button type="button" aria-label="元に戻す" onClick={handleUndo} disabled={!strokes.length}
             className="flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-white disabled:opacity-30">
