@@ -1,4 +1,5 @@
 import type { DiaryEntry, PlantType } from "@/lib/types";
+import { getBaseUrl } from "@/lib/serverConfig";
 
 async function parse<T>(response: Response): Promise<T> {
   const json = (await response.json()) as T & { error?: string };
@@ -9,25 +10,25 @@ async function parse<T>(response: Response): Promise<T> {
 }
 
 export async function fetchEntriesByMonth(month: string): Promise<DiaryEntry[]> {
-  const response = await fetch(`/api/entries?month=${month}`, { cache: "no-store" });
+  const response = await fetch(`${getBaseUrl()}/api/entries?month=${month}`, { cache: "no-store" });
   const json = await parse<{ entries: DiaryEntry[] }>(response);
   return json.entries;
 }
 
 export async function fetchEntriesByDate(date: string): Promise<DiaryEntry[]> {
-  const response = await fetch(`/api/entries/by-date/${date}`, { cache: "no-store" });
+  const response = await fetch(`${getBaseUrl()}/api/entries/by-date/${date}`, { cache: "no-store" });
   const json = await parse<{ entries: DiaryEntry[] }>(response);
   return json.entries;
 }
 
 export async function fetchAllEntries(): Promise<DiaryEntry[]> {
-  const response = await fetch("/api/entries", { cache: "no-store" });
+  const response = await fetch(`${getBaseUrl()}/api/entries`, { cache: "no-store" });
   const json = await parse<{ entries: DiaryEntry[] }>(response);
   return json.entries;
 }
 
 export async function fetchPlantTypes(includeArchived = false): Promise<PlantType[]> {
-  const response = await fetch(`/api/plant-types?archived=${includeArchived}`);
+  const response = await fetch(`${getBaseUrl()}/api/plant-types?archived=${includeArchived}`);
   const json = await parse<{ plantTypes: PlantType[] }>(response);
   return json.plantTypes;
 }

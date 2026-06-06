@@ -31,3 +31,8 @@ export type CompressionSettings = {
   height: number;
   quality: number;
 };
+
+export type ServerConfig = {
+  host: string;
+  port: number;
+};
