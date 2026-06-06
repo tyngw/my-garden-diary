@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { XMarkIcon, ArrowPathIcon } from "@heroicons/react/24/outline";
+import { XMarkIcon, ArrowPathIcon, ArrowUturnLeftIcon, ArrowUturnRightIcon } from "@heroicons/react/24/outline";
 import { CheckIcon } from "@heroicons/react/24/solid";
 import { useDrawingCanvas } from "@/hooks/useDrawingCanvas";
 import { recognizeShape, MARKER_LINE_WIDTH, type Point, type RecognizedShape } from "@/lib/shapeRecognition";
@@ -31,23 +31,23 @@ function drawShape(ctx: CanvasRenderingContext2D, shape: DrawnShape) {
   ctx.stroke();
 }
 
-type Props = {
-  imageSrc: string;
-  onSave: (blob: Blob) => Promise<void>;
-  onClose: () => void;
-};
+type Props = { imageSrc: string; onSave: (blob: Blob) => Promise<void>; onClose: () => void };
 
 export function ImageEditor({ imageSrc, onSave, onClose }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const baseImgRef = useRef<HTMLImageElement | null>(null);
   const strokesRef = useRef<DrawnShape[]>([]);
+  const redoStackRef = useRef<DrawnShape[]>([]);
   const colorRef = useRef(COLORS[0].value);
   const [strokes, setStrokes] = useState<DrawnShape[]>([]);
+  const [redoStack, setRedoStack] = useState<DrawnShape[]>([]);
   const [color, setColor] = useState(COLORS[0].value);
+  const [colorPickerOpen, setColorPickerOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [currentSrc, setCurrentSrc] = useState(imageSrc);
 
   useEffect(() => { strokesRef.current = strokes; }, [strokes]);
+  useEffect(() => { redoStackRef.current = redoStack; }, [redoStack]);
 
   const redraw = useCallback(() => {
     const canvas = canvasRef.current;
@@ -65,10 +65,7 @@ export function ImageEditor({ imageSrc, onSave, onClose }: Props) {
     img.onload = () => {
       baseImgRef.current = img;
       const canvas = canvasRef.current;
-      if (canvas) {
-        canvas.width = img.naturalWidth;
-        canvas.height = img.naturalHeight;
-      }
+      if (canvas) { canvas.width = img.naturalWidth; canvas.height = img.naturalHeight; }
       redraw();
     };
     img.src = currentSrc;
@@ -79,9 +76,24 @@ export function ImageEditor({ imageSrc, onSave, onClose }: Props) {
   const handleStrokeEnd = useCallback((pts: Point[]) => {
     if (pts.length < 2) return;
     setStrokes(prev => [...prev, { ...recognizeShape(pts), color: colorRef.current }]);
+    setRedoStack([]);
   }, []);
 
   useDrawingCanvas({ canvasRef, colorRef, onStrokeEnd: handleStrokeEnd });
+
+  const handleUndo = useCallback(() => {
+    if (!strokesRef.current.length) return;
+    const last = strokesRef.current[strokesRef.current.length - 1];
+    setStrokes(prev => prev.slice(0, -1));
+    setRedoStack(prev => [...prev, last]);
+  }, []);
+
+  const handleRedo = useCallback(() => {
+    if (!redoStackRef.current.length) return;
+    const last = redoStackRef.current[redoStackRef.current.length - 1];
+    setRedoStack(prev => prev.slice(0, -1));
+    setStrokes(prev => [...prev, last]);
+  }, []);
 
   const handleRotate = useCallback(() => {
     const canvas = canvasRef.current;
@@ -95,6 +107,7 @@ export function ImageEditor({ imageSrc, onSave, onClose }: Props) {
     ctx.drawImage(canvas, 0, 0);
     setCurrentSrc(off.toDataURL("image/jpeg", 0.9));
     setStrokes([]);
+    setRedoStack([]);
   }, []);
 
   const handleSave = useCallback(async () => {
@@ -106,43 +119,68 @@ export function ImageEditor({ imageSrc, onSave, onClose }: Props) {
         canvas.toBlob(b => b ? resolve(b) : reject(new Error("生成失敗")), "image/jpeg", 0.85)
       );
       await onSave(blob);
-    } finally {
-      setSaving(false);
-    }
+    } finally { setSaving(false); }
   }, [onSave]);
+
+  const selectColor = (value: string) => {
+    colorRef.current = value;
+    setColor(value);
+    setColorPickerOpen(false);
+  };
 
   return (
     <div className="fixed inset-0 z-[60] flex flex-col bg-black">
-      <div className="flex flex-1 items-center justify-center overflow-hidden p-2">
-        <canvas ref={canvasRef} className="touch-none block" style={{ maxWidth: "100%", maxHeight: "100%" }} />
-      </div>
-      <div className="flex items-center justify-between gap-1 px-3 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
+      <div className="flex items-center justify-between px-4 pb-2 pt-[max(1rem,env(safe-area-inset-top))]">
         <button type="button" aria-label="キャンセル" onClick={onClose}
           className="flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-white">
           <XMarkIcon className="h-6 w-6" />
         </button>
-        <button type="button" aria-label="90度回転" onClick={handleRotate}
-          className="flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-white">
-          <ArrowPathIcon className="h-6 w-6" />
-        </button>
-        <div className="flex gap-1.5">
-          {COLORS.map(c => (
-            <button key={c.value} type="button" aria-label={c.label}
-              onClick={() => { colorRef.current = c.value; setColor(c.value); }}
-              className="h-8 w-8 rounded-full border-[3px] transition-transform"
-              style={{
-                backgroundColor: c.value,
-                borderColor: color === c.value ? "#fff" : "rgba(255,255,255,0.25)",
-                transform: color === c.value ? "scale(1.2)" : "scale(1)",
-                boxShadow: c.value === "#ffffff" ? "inset 0 0 0 1px rgba(0,0,0,0.3)" : "none",
-              }}
-            />
-          ))}
-        </div>
         <button type="button" aria-label="保存" disabled={saving} onClick={handleSave}
           className="flex h-11 w-11 items-center justify-center rounded-full bg-[#2d7a4f] text-white disabled:opacity-50">
           <CheckIcon className="h-6 w-6" />
         </button>
+      </div>
+
+      <div className="flex flex-1 items-center justify-center overflow-hidden p-2"
+        onPointerDown={() => setColorPickerOpen(false)}>
+        <canvas ref={canvasRef} className="touch-none block" style={{ maxWidth: "100%", maxHeight: "100%" }} />
+      </div>
+
+      {colorPickerOpen ? (
+        <div className="flex justify-end gap-2 px-5 pb-2">
+          {COLORS.map(c => (
+            <button key={c.value} type="button" aria-label={c.label} onClick={() => selectColor(c.value)}
+              className="h-9 w-9 rounded-full border-[3px] transition-transform active:scale-110"
+              style={{
+                backgroundColor: c.value,
+                borderColor: color === c.value ? "#fff" : "rgba(255,255,255,0.3)",
+                boxShadow: c.value === "#ffffff" ? "inset 0 0 0 1px rgba(0,0,0,0.3)" : "none",
+              }} />
+          ))}
+        </div>
+      ) : null}
+
+      <div className="flex items-center justify-between px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+        <div className="flex gap-2">
+          <button type="button" aria-label="90度回転" onClick={handleRotate}
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-white">
+            <ArrowPathIcon className="h-5 w-5" />
+          </button>
+          <button type="button" aria-label="元に戻す" onClick={handleUndo} disabled={!strokes.length}
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-white disabled:opacity-30">
+            <ArrowUturnLeftIcon className="h-5 w-5" />
+          </button>
+          <button type="button" aria-label="やり直す" onClick={handleRedo} disabled={!redoStack.length}
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-white disabled:opacity-30">
+            <ArrowUturnRightIcon className="h-5 w-5" />
+          </button>
+        </div>
+        <button type="button" aria-label="色を選択" onClick={() => setColorPickerOpen(v => !v)}
+          className="h-11 w-11 rounded-full border-[3px] border-white/70 transition-transform active:scale-110"
+          style={{
+            backgroundColor: color,
+            boxShadow: color === "#ffffff" ? "inset 0 0 0 1px rgba(0,0,0,0.3)" : "none",
+          }} />
       </div>
     </div>
   );
