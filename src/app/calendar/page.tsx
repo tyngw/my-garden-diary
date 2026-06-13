@@ -32,17 +32,27 @@ export default function CalendarPage() {
     const parsedMonth = parseMonthParam(monthFromUrl);
     const initialMonth = parsedMonth > thisMonth ? thisMonth : parsedMonth;
     setMonth(initialMonth);
-    if (monthFromUrl !== format(initialMonth, "yyyy-MM")) {
+    const isCurrentMonth = format(initialMonth, "yyyy-MM") === format(thisMonth, "yyyy-MM");
+    if (isCurrentMonth && monthFromUrl !== null) {
+      router.replace("/calendar", { scroll: false });
+    } else if (!isCurrentMonth && monthFromUrl !== format(initialMonth, "yyyy-MM")) {
       router.replace(`/calendar?month=${format(initialMonth, "yyyy-MM")}`, { scroll: false });
     }
     setHydrated(true);
   }, [router, thisMonth]);
 
+  const goToCurrentMonth = (): void => {
+    setMonth(thisMonth);
+    router.replace("/calendar", { scroll: false });
+  };
+
   const moveMonth = (delta: number): void => {
     setMonth((current) => {
       const shifted = delta > 0 ? addMonths(current, delta) : subMonths(current, Math.abs(delta));
       const next = shifted > thisMonth ? thisMonth : shifted;
-      router.replace(`/calendar?month=${format(next, "yyyy-MM")}`, { scroll: false });
+      const isCurrentMonth = format(next, "yyyy-MM") === format(thisMonth, "yyyy-MM");
+      const url = isCurrentMonth ? "/calendar" : `/calendar?month=${format(next, "yyyy-MM")}`;
+      router.replace(url, { scroll: false });
       return next;
     });
   };
@@ -69,10 +79,15 @@ export default function CalendarPage() {
     <AppShell>
       <section className="mb-4 px-1 pt-1 sm:px-2">
         <div className="mb-4 flex items-end justify-between gap-3">
-          <div>
+          <button
+            type="button"
+            className="touch-manipulation text-left"
+            {...bindTap(goToCurrentMonth)}
+            aria-label="今月のカレンダーに戻る"
+          >
             <p className="text-xs font-semibold tracking-wide text-[var(--ink-soft)]">GARDEN CALENDAR</p>
             <h2 className="text-xl font-extrabold text-[var(--ink)] sm:text-2xl">成長の記録</h2>
-          </div>
+          </button>
           <div className="flex items-center gap-2">
             <div className="rounded-xl bg-[var(--surface-soft)] border border-[var(--line)] px-3 py-1 text-xs font-semibold text-[var(--ink-soft)]">
               {recordDays} days
